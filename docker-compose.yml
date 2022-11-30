@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    ports:
+      - 5430:5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DATABASE=rtx
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+  server:
+    container_name: API_Server
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    build: ./Server
+
+  # client:
+  #   container_name: Frontend
+  #   image: node:16.13.1
+  #   depends_on:
+  #     - server
+  #   ports:
+  #     - 5000:5000
+  #   volumes:
+  #     - ./client:/var/www/html/client
