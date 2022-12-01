@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import IPaginationRequest from "@Contracts/interfaces/IPaginationRequest";
 import PaginationProvider from "@Utils/PaginationProvider";
 import {
@@ -6,6 +5,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpError,
   JsonController,
   NotFoundError,
   Param,
@@ -13,55 +13,99 @@ import {
   Post,
   QueryParams
 } from "routing-controllers";
-
-const prisma = new PrismaClient();
+import DBClient from "@Singletons/DBClient";
+import { isNumber } from "lodash";
+import { CreateUserDTO } from "@Schemas/dtos/UserDtos";
+import Container from "typedi";
+import { User } from "@prisma/client";
 
 @JsonController("/users")
 export default class UserController {
+  private readonly db: DBClient;
+
+  constructor() {
+    this.db = Container.get(DBClient);
+  }
+
   @Get("/")
   async index(@QueryParams() query: IPaginationRequest) {
-    const pagination = PaginationProvider.fromQuery(query);
+    const pagination = PaginationProvider.fromQuery<User>(query);
 
-    const users = await prisma.user.findMany({
-      take: pagination.limit,
-      skip: pagination.offset
-    });
+    const users = await this.db.user
+      .findMany({
+        take: pagination.limit,
+        skip: pagination.offset
+      })
+      .catch(e => console.error(e));
 
-    return pagination.toResponse(users, await prisma.user.count());
+    const total = await this.db.user.count().catch(e => console.error(e));
+
+    return pagination.toResponse(users || [], total || 0);
   }
 
   @Post("/")
   @HttpCode(201)
-  async store(@Body() body: { firstname: string; lastname: string }) {
-    return prisma.user.create({ data: body });
+  async store(@Body() body: CreateUserDTO) {
+    const user = this.db.user
+      .create({ data: body })
+      .catch(e => console.error(e));
+
+    if (!user) throw new HttpError(501, "Unable to create user.");
+
+    return user;
   }
 
   @Patch("/:id")
   async update(
     @Param("id") id: number,
-    @Body() body: { firstname?: string; lastname?: string }
+    @Body({ validate: { skipMissingProperties: true } }) body: CreateUserDTO
   ) {
-    return prisma.user.update({ data: body, where: { id } });
+    this.ensureValidId(id);
+
+    const user = this.db.user
+      .update({ data: body, where: { id } })
+      .catch(e => console.info(e));
+
+    if (!user) this.throwNotFound();
+
+    return user;
   }
 
   @Get("/:id")
   async show(@Param("id") id: number) {
-    const user = await prisma.user.findUnique({ where: { id } });
+    this.ensureValidId(id);
 
-    if (!user) throw new NotFoundError("The user not found.");
+    const user = await this.db.user
+      .findUnique({ where: { id } })
+      .catch(e => console.info(e));
+
+    if (!user) this.throwNotFound();
 
     return user;
   }
 
   @Delete("/:id")
   async destroy(@Param("id") id: number) {
-    const user = await prisma.user.delete({ where: { id } });
+    this.ensureValidId(id);
 
-    if (!user) throw new NotFoundError("The user not found.");
+    const user = await this.db.user
+      .delete({ where: { id } })
+      .catch(e => console.info(e));
+
+    if (!user) this.throwNotFound();
 
     return {
       success: true,
-      message: "The user deleted."
+      message: "The user was deleted.",
+      data: user
     };
+  }
+
+  private throwNotFound(): never {
+    throw new NotFoundError("The user was not found.");
+  }
+
+  private ensureValidId(id: number): void {
+    if (!isNumber(id)) this.throwNotFound();
   }
 }
