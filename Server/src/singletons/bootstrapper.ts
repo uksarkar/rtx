@@ -1,8 +1,9 @@
 import express, { Application } from "express";
-import { Inject, Service } from "typedi";
+import Container, { Inject, Service } from "typedi";
 import { useExpressServer } from "routing-controllers";
 import { APPLICATION_CONTROLLER_PATHS } from "@Configs/controllers-config";
 import { APPLICATION_HOST, APPLICATION_PORT } from "@Configs/app-configs";
+import DBClient from "./DBClient";
 
 @Service()
 export class Bootstrapper {
@@ -29,6 +30,7 @@ export class Bootstrapper {
         );
       });
     } catch (error) {
+      Container.get(DBClient).disconnect();
       console.log(error);
     }
   }
