@@ -20,7 +20,7 @@ export class Bootstrapper {
   /**
    * Start the server
    */
-  start() {
+  start(): Application | void {
     try {
       this.init();
 
@@ -29,6 +29,8 @@ export class Bootstrapper {
           `Application is running at http://${this._host}:${this._port}`
         );
       });
+
+      return this._app;
     } catch (error) {
       Container.get(DBClient).disconnect();
       console.log(error);
