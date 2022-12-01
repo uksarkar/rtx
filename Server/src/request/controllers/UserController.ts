@@ -7,25 +7,18 @@ import {
   HttpCode,
   HttpError,
   JsonController,
-  NotFoundError,
   Param,
   Patch,
   Post,
   QueryParams
 } from "routing-controllers";
-import DBClient from "@Singletons/DBClient";
-import { isNumber } from "lodash";
 import { CreateUserDTO } from "@Schemas/dtos/UserDtos";
-import Container from "typedi";
-import { User } from "@prisma/client";
+import { Post as PostModel, User } from "@prisma/client";
+import BaseController from "@Contracts/BaseController";
 
 @JsonController("/users")
-export default class UserController {
-  private readonly db: DBClient;
-
-  constructor() {
-    this.db = Container.get(DBClient);
-  }
+export default class UserController extends BaseController {
+  protected notFoundMessage: string = "The user was not found.";
 
   @Get("/")
   async index(@QueryParams() query: IPaginationRequest) {
@@ -84,6 +77,41 @@ export default class UserController {
     return user;
   }
 
+  @Get("/:id/posts")
+  async posts(
+    @Param("id") id: number,
+    @QueryParams() query: IPaginationRequest
+  ) {
+    this.ensureValidId(id);
+
+    const pagination = new PaginationProvider<PostModel>(
+      query.page,
+      query.limit
+    );
+
+    const user = await this.db.user.findUnique({
+      where: {
+        id
+      },
+      include: {
+        posts: {
+          skip: pagination.offset,
+          take: pagination.limit
+        }
+      }
+    });
+
+    const total = await this.db.post.count({
+      where: {
+        user_id: id
+      }
+    });
+
+    if (!user) this.throwNotFound();
+
+    return pagination.toResponse(user.posts, total);
+  }
+
   @Delete("/:id")
   async destroy(@Param("id") id: number) {
     this.ensureValidId(id);
@@ -99,13 +127,5 @@ export default class UserController {
       message: "The user was deleted.",
       data: user
     };
-  }
-
-  private throwNotFound(): never {
-    throw new NotFoundError("The user was not found.");
-  }
-
-  private ensureValidId(id: number): void {
-    if (!isNumber(id)) this.throwNotFound();
   }
 }
