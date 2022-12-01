@@ -1,11 +1,10 @@
-import PathProvider from "@Utils/PathProvider";
-import { Get, JsonController, Render } from "routing-controllers";
+// import PathProvider from "@Utils/PathProvider";
+import { Get } from "routing-controllers";
 
-@JsonController("/")
 export default class HomeController {
   @Get()
-  @Render(PathProvider.publicPath("/index.html"))
+  // @Render(PathProvider.publicPath("/index.html"))
   index() {
-    return {};
+    return "Using for API only";
   }
 }
