@@ -1,21 +1,32 @@
 import PaginatedResponse from "@Contracts/interfaces/PaginatedResponse";
-import { isNumber, toNumber } from "lodash";
+import { isInteger, isNumber, toNumber } from "lodash";
 
 export default class PaginationProvider<T> {
-  private _total = 0;
+  private readonly _maxLimit = 1000;
+  private readonly _minLimit = 10;
 
-  constructor(private _page: number, private _limit: number) {}
+  private _total = 0;
+  private _page: number;
+  private _limit: number;
+
+  constructor(page?: number | string, limit?: number | string) {
+    this._page = Math.max(this.toInteger(page, 1), 1);
+    this._limit = Math.max(
+      this.toInteger(limit, this._minLimit),
+      this._minLimit
+    );
+  }
 
   get page(): number {
     return this._page;
   }
 
   get limit(): number {
-    return this._limit;
+    return Math.min(this._limit, this._maxLimit);
   }
 
   get offset(): number {
-    return this._limit * (this._page - 1);
+    return this._limit * Math.max(this._page - 1, 0);
   }
 
   get total(): number {
@@ -42,7 +53,11 @@ export default class PaginationProvider<T> {
     limit?: number | string;
     page?: number | string;
   }) {
-    const { page = 1, limit = 10 } = query;
-    return new this<T>(toNumber(page), toNumber(limit));
+    const { page, limit } = query;
+    return new this<T>(page, limit);
+  }
+
+  private toInteger(val?: number | string, back?: number): number {
+    return isInteger(toNumber(val)) ? toNumber(val) : back || 0;
   }
 }
