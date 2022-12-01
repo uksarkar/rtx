@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register src/app.ts --watch",
-    "build": "tsc && tsc-alias"
+    "build": "tsc && tsc-alias",
+    "test": "jest --detectOpenHandles"
   },
   "dependencies": {
     "@prisma/client": "^4.7.0",
@@ -22,9 +23,14 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
+    "@types/jest": "^29.2.3",
     "@types/lodash": "^4.14.190",
     "@types/node": "^18.11.9",
+    "@types/supertest": "^2.0.12",
+    "jest": "^29.3.1",
     "prisma": "^4.7.0",
+    "supertest": "^6.3.1",
+    "ts-jest": "^29.0.3",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.7.1",
     "tsconfig-paths": "^4.1.0",
