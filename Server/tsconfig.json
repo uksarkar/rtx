@@ -1,14 +1,10 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
     "target": "es2016",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    /* Modules */
     "module": "commonjs",
     "rootDir": "./src",
-    // "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
-    // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     "paths": {
       "@Singletons/*": ["./src/singletons/*"],
       "@Contracts/*": ["./src/contracts/*"],
@@ -19,17 +15,12 @@
       "@Utils/*": ["./src/utils/*"]
     },
     "esModuleInterop": true,
-    // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
     "forceConsistentCasingInFileNames": true,
-
-    /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "noImplicitReturns": true,
-    /* Completeness */
-    // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true,
     "outDir": "./dist"
   }
