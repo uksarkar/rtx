@@ -1,8 +1,38 @@
+import { Post, PrismaClient, User } from "@prisma/client";
 import { Bootstrapper } from "@Singletons/bootstrapper";
 import supertest from "supertest";
 import Container from "typedi";
 
-const app = Container.get(Bootstrapper).start();
+const app = Container.get(Bootstrapper).app;
+const prisma = new PrismaClient();
+
+let post: Post, user: User;
+
+beforeAll(async () => {
+  await prisma.$connect();
+
+  user = await prisma.user.create({
+    data: {
+      firstname: "Test",
+      lastname: "user"
+    }
+  });
+
+  post = await prisma.post.create({
+    data: {
+      title: "This is a initial test post",
+      description: "this is the description of the test post",
+      user_id: user.id
+    }
+  });
+});
+
+afterAll(async () => {
+  await Promise.all([
+    prisma.user.delete({ where: { id: user.id } }),
+    prisma.$disconnect()
+  ]);
+});
 
 describe("PostController tests", () => {
   it("PostController@index: list posts", async () => {
@@ -13,16 +43,17 @@ describe("PostController tests", () => {
         expect(res.body.page).toEqual(1);
         expect(res.body.limit).toEqual(10);
         expect(Array.isArray(res.body.data)).toBe(true);
+        expect(res.body.data.length).toBeGreaterThanOrEqual(1);
       });
   });
 
   it("PostController@show: should get a post", async () => {
     await supertest(app)
-      .get("/posts/1")
+      .get(`/posts/${post.id}`)
       .expect(200)
       .expect(res => {
-        expect(res.body.id).toBeGreaterThanOrEqual(1);
-        expect(res.body.user.id).toBeGreaterThanOrEqual(1);
+        expect(res.body.id).toEqual(post.id);
+        expect(res.body.user.id).toEqual(user.id);
       });
   });
 
@@ -38,7 +69,8 @@ describe("PostController tests", () => {
       .post("/posts")
       .send({
         title,
-        description
+        description,
+        user_id: user.id
       })
       .expect(201)
       .expect(response => {
@@ -63,7 +95,7 @@ describe("PostController tests", () => {
     const description = "Some updated description goes here";
 
     await supertest(app)
-      .patch("/posts/1")
+      .patch(`/posts/${post.id}`)
       .send({
         title,
         description
@@ -78,7 +110,7 @@ describe("PostController tests", () => {
   it("PostController@update: can update partial data", async () => {
     const title = "AAAAAAAAAAAAA";
     await supertest(app)
-      .patch("/posts/1")
+      .patch(`/posts/${post.id}`)
       .send({ title })
       .expect(200)
       .expect(response => {
@@ -88,7 +120,7 @@ describe("PostController tests", () => {
 
   it("PostController@update: should validate provided data", async () => {
     await supertest(app)
-      .patch("/posts/1")
+      .patch(`/posts/${post.id}`)
       .send({
         title: "TT"
       })
@@ -110,7 +142,7 @@ describe("PostController tests", () => {
 
   it("PostController@destroy: can delete a post", async () => {
     await supertest(app)
-      .delete("/posts/1")
+      .delete(`/posts/${post.id}`)
       .expect(200)
       .expect(res => {
         expect(Array.isArray(res.body.success)).toBe(true);

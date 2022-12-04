@@ -28,7 +28,7 @@ describe("Util:PaginatorProvider", () => {
     const paginator = new PaginationProvider("abcd", "efg");
 
     expect(paginator.limit).toBe(10);
-    expect(paginator.offset).toBe(10);
+    expect(paginator.offset).toBe(0);
     expect(paginator.page).toBe(1);
   });
 

@@ -29,9 +29,9 @@ export default class PostController extends BaseController {
         take: pagination.limit,
         skip: pagination.offset
       })
-      .catch(e => console.error(e));
+      .catch(e => this.logger.error(e));
 
-    const total = await this.db.post.count().catch(e => console.error(e));
+    const total = await this.db.post.count().catch(e => this.logger.alert(e));
 
     return pagination.toResponse(posts || [], total || 0);
   }
@@ -41,7 +41,7 @@ export default class PostController extends BaseController {
   async store(@Body() body: CreatePostDTO) {
     const post = this.db.post
       .create({ data: body })
-      .catch(e => console.error(e));
+      .catch(e => this.logger.error(e));
 
     if (!post) throw new HttpError(501, "Unable to create post.");
 
@@ -57,7 +57,7 @@ export default class PostController extends BaseController {
 
     const post = this.db.post
       .update({ data: body, where: { id } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!post) this.throwNotFound();
 
@@ -70,7 +70,7 @@ export default class PostController extends BaseController {
 
     const post = await this.db.post
       .findUnique({ where: { id }, include: { user: true } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!post) this.throwNotFound();
 
@@ -83,7 +83,7 @@ export default class PostController extends BaseController {
 
     const post = await this.db.post
       .delete({ where: { id } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!post) this.throwNotFound();
 

@@ -24,14 +24,33 @@ export default class UserController extends BaseController {
   async index(@QueryParams() query: IPaginationRequest) {
     const pagination = PaginationProvider.fromQuery<User>(query);
 
+    const where =
+      query.q && query.q.length
+        ? {
+            OR: [
+              {
+                firstname: {
+                  search: query.q
+                }
+              },
+              {
+                lastname: {
+                  search: query.q
+                }
+              }
+            ]
+          }
+        : undefined;
+
     const users = await this.db.user
       .findMany({
+        where,
         take: pagination.limit,
         skip: pagination.offset
       })
-      .catch(e => console.error(e));
+      .catch(e => this.logger.error(e));
 
-    const total = await this.db.user.count().catch(e => console.error(e));
+    const total = await this.db.user.count().catch(e => this.logger.error(e));
 
     return pagination.toResponse(users || [], total || 0);
   }
@@ -41,7 +60,7 @@ export default class UserController extends BaseController {
   async store(@Body() body: CreateUserDTO) {
     const user = this.db.user
       .create({ data: body })
-      .catch(e => console.error(e));
+      .catch(e => this.logger.error(e));
 
     if (!user) throw new HttpError(501, "Unable to create user.");
 
@@ -57,7 +76,7 @@ export default class UserController extends BaseController {
 
     const user = this.db.user
       .update({ data: body, where: { id } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!user) this.throwNotFound();
 
@@ -70,7 +89,7 @@ export default class UserController extends BaseController {
 
     const user = await this.db.user
       .findUnique({ where: { id } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!user) this.throwNotFound();
 
@@ -118,7 +137,7 @@ export default class UserController extends BaseController {
 
     const user = await this.db.user
       .delete({ where: { id } })
-      .catch(e => console.info(e));
+      .catch(e => this.logger.info(e));
 
     if (!user) this.throwNotFound();
 

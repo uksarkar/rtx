@@ -2,7 +2,11 @@ import express, { Application } from "express";
 import Container, { Inject, Service } from "typedi";
 import { useExpressServer } from "routing-controllers";
 import { APPLICATION_CONTROLLER_PATHS } from "@Configs/controllers-config";
-import { APPLICATION_HOST, APPLICATION_PORT } from "@Configs/app-configs";
+import {
+  APPLICATION_CORS,
+  APPLICATION_HOST,
+  APPLICATION_PORT
+} from "@Configs/app-configs";
 import DBClient from "./DBClient";
 
 @Service()
@@ -12,25 +16,27 @@ export class Bootstrapper {
   constructor(
     @Inject(APPLICATION_PORT) private _port: number,
     @Inject(APPLICATION_HOST) private _host: string,
-    @Inject(APPLICATION_CONTROLLER_PATHS) private _controllers: string[]
+    @Inject(APPLICATION_CONTROLLER_PATHS) private _controllers: string[],
+    @Inject(APPLICATION_CORS) private _cors: string | string[]
   ) {
     this._app = express();
+    this.init();
+  }
+
+  get app(): Application {
+    return this._app;
   }
 
   /**
    * Start the server
    */
-  start(): Application | void {
+  start(): void {
     try {
-      this.init();
-
       this._app.listen(this._port, this._host, () => {
         console.log(
           `Application is running at http://${this._host}:${this._port}`
         );
       });
-
-      return this._app;
     } catch (error) {
       Container.get(DBClient).disconnect();
       console.log(error);
@@ -39,7 +45,25 @@ export class Bootstrapper {
 
   private init(): void {
     useExpressServer(this._app, {
-      controllers: this._controllers
+      controllers: this._controllers,
+      cors: {
+        origin: (
+          origin: string,
+          callback: (err: Error | null, allowed?: boolean) => void
+        ) => {
+          console.log(this._cors, origin);
+          if (
+            (typeof this._cors === "string" &&
+              (this._cors === "*" || origin === this._cors)) ||
+            this._cors.includes(origin)
+          ) {
+            callback(null, true);
+            return;
+          }
+
+          callback(new Error("Not allowed."));
+        }
+      }
     });
   }
 }

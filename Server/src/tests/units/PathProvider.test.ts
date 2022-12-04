@@ -24,7 +24,7 @@ describe("Unit:PathProvider", () => {
   });
 
   it("get public path", () => {
-    const publicPath = join(process.cwd(), "/src/request/public");
+    const publicPath = join(process.cwd(), "/src/public");
     const providerPublicPath = PathProvider.publicPath();
 
     expect(providerPublicPath).toEqual(publicPath);

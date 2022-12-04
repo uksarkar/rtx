@@ -8,5 +8,8 @@ module.exports = {
   testMatch: ["**/**/*.test.ts"],
   verbose: true,
   forceExit: true,
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths)
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: "<rootDir>/src"
+  })
 };

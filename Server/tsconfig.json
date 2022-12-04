@@ -4,15 +4,15 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "commonjs",
-    "rootDir": "./src",
+    "baseUrl": "src",
     "paths": {
-      "@Singletons/*": ["./src/singletons/*"],
-      "@Contracts/*": ["./src/contracts/*"],
-      "@Controllers/*": ["./src/request/controllers/*"],
-      "@Schemas/*": ["./src/request/schema/*"],
-      "@Middlewares/*": ["./src/request/middlewares/*"],
-      "@Configs/*": ["./src/configs/*"],
-      "@Utils/*": ["./src/utils/*"]
+      "@Singletons/*": ["singletons/*"],
+      "@Contracts/*": ["contracts/*"],
+      "@Controllers/*": ["request/controllers/*"],
+      "@Schemas/*": ["request/schema/*"],
+      "@Middlewares/*": ["request/middlewares/*"],
+      "@Configs/*": ["configs/*"],
+      "@Utils/*": ["utils/*"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

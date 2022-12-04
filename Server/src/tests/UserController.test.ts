@@ -1,8 +1,27 @@
+import { PrismaClient, User } from "@prisma/client";
 import { Bootstrapper } from "@Singletons/bootstrapper";
 import supertest from "supertest";
 import Container from "typedi";
 
-const app = Container.get(Bootstrapper).start();
+const app = Container.get(Bootstrapper).app;
+const prisma = new PrismaClient();
+
+let user: User;
+
+beforeAll(async () => {
+  await prisma.$connect();
+
+  user = await prisma.user.create({
+    data: {
+      firstname: "Test",
+      lastname: "user"
+    }
+  });
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
 
 describe("UserController tests", () => {
   it("UserController@index: list users", async () => {
@@ -18,7 +37,7 @@ describe("UserController tests", () => {
 
   it("UserController@show: should get a user", async () => {
     await supertest(app)
-      .get("/users/1")
+      .get(`/users/${user.id}`)
       .expect(200)
       .expect(res => {
         expect(res.body.id).toBeGreaterThanOrEqual(1);
@@ -56,7 +75,7 @@ describe("UserController tests", () => {
 
   it("UserController@update: should update a user", async () => {
     await supertest(app)
-      .patch("/users/1")
+      .patch(`/users/${user.id}`)
       .send({
         firstname: "AAAAAAAAA",
         lastname: "BBBBB"
@@ -70,7 +89,7 @@ describe("UserController tests", () => {
 
   it("UserController@update: can update partial data", async () => {
     await supertest(app)
-      .patch("/users/1")
+      .patch(`/users/${user.id}`)
       .send({
         firstname: "RRRRRRR"
       })
@@ -82,7 +101,7 @@ describe("UserController tests", () => {
 
   it("UserController@update: should validate provided data", async () => {
     await supertest(app)
-      .patch("/users/1")
+      .patch(`/users/${user.id}`)
       .send({
         firstname: "RR"
       })
@@ -101,7 +120,7 @@ describe("UserController tests", () => {
 
   it("UserController@posts: user posts endpoint", async () => {
     await supertest(app)
-      .get("/users/1/posts")
+      .get(`/users/${user.id}/posts`)
       .expect(200)
       .expect(res => {
         expect(Array.isArray(res.body.data)).toBe(true);
@@ -110,7 +129,7 @@ describe("UserController tests", () => {
 
   it("UserController@destroy: can delete a user", async () => {
     await supertest(app)
-      .delete("/users/1")
+      .delete(`/users/${user.id}`)
       .expect(200)
       .expect(res => {
         expect(Array.isArray(res.body.success)).toBe(true);

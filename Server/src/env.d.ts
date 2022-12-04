@@ -5,6 +5,7 @@ declare global {
       APP_HOST?: string;
       DATABASE_URL?: string;
       SOURCE_API?: string;
+      ALLOWED_ORIGINS?: string;
     }
   }
 }
