@@ -51,7 +51,6 @@ export class Bootstrapper {
           origin: string,
           callback: (err: Error | null, allowed?: boolean) => void
         ) => {
-          console.log(this._cors, origin);
           if (
             (typeof this._cors === "string" &&
               (this._cors === "*" || origin === this._cors)) ||

@@ -1,16 +1,15 @@
-import { Post, PrismaClient, User } from "@prisma/client";
+import { Post, User } from "@prisma/client";
 import { Bootstrapper } from "@Singletons/bootstrapper";
+import DBClient from "@Singletons/DBClient";
 import supertest from "supertest";
 import Container from "typedi";
 
 const app = Container.get(Bootstrapper).app;
-const prisma = new PrismaClient();
+const prisma = Container.get(DBClient);
 
 let post: Post, user: User;
 
 beforeAll(async () => {
-  await prisma.$connect();
-
   user = await prisma.user.create({
     data: {
       firstname: "Test",
@@ -25,13 +24,6 @@ beforeAll(async () => {
       user_id: user.id
     }
   });
-});
-
-afterAll(async () => {
-  await Promise.all([
-    prisma.user.delete({ where: { id: user.id } }),
-    prisma.$disconnect()
-  ]);
 });
 
 describe("PostController tests", () => {
@@ -145,7 +137,7 @@ describe("PostController tests", () => {
       .delete(`/posts/${post.id}`)
       .expect(200)
       .expect(res => {
-        expect(Array.isArray(res.body.success)).toBe(true);
+        expect(res.body.success).toBe(true);
       });
   });
 });

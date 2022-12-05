@@ -19,10 +19,6 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => {
-  await prisma.$disconnect();
-});
-
 describe("UserController tests", () => {
   it("UserController@index: list users", async () => {
     await supertest(app)
@@ -132,7 +128,7 @@ describe("UserController tests", () => {
       .delete(`/users/${user.id}`)
       .expect(200)
       .expect(res => {
-        expect(Array.isArray(res.body.success)).toBe(true);
+        expect(res.body.success).toBe(true);
       });
   });
 });
