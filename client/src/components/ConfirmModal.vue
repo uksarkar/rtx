@@ -14,6 +14,7 @@
 
 <script lang="ts" setup>
 import { computed } from "vue";
+import { ElButton, ElDialog } from "element-plus";
 
 const props = defineProps({
   show: {

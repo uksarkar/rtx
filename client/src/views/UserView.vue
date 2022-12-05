@@ -3,7 +3,7 @@
   <ElCard>
     <template #header>
       <div class="card-header">
-        <ElRow justify="between">
+        <ElRow justify="space-between">
           <ElCol :span="12"> {{ user?.firstname }} {{ user?.lastname }} </ElCol>
           <ElCol :span="12">
             <el-space alignment="flex-end">

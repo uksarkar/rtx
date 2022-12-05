@@ -8,6 +8,6 @@
   ],
   "compilerOptions": {
     "composite": true,
-    "types": ["node", "element-plus/global"]
+    "types": ["node", "element-plus/global", "jest"]
   }
 }

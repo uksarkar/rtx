@@ -2,7 +2,7 @@
   <h1>Post</h1>
   <ElCard>
     <template #header>
-      <ElRow justify="between">
+      <ElRow justify="space-between">
         <ElCol :span="12">
           {{ post?.title }} <br />
           <small
